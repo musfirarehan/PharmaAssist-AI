@@ -15,7 +15,12 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { prescriptionTrend } from "@/lib/data"
+
+type ActivityPoint = {
+  month: string
+  prescriptions: number
+  medicines: number
+}
 
 const chartConfig = {
   prescriptions: {
@@ -28,7 +33,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function OverviewChart() {
+export function OverviewChart({ data = [] }: { data?: ActivityPoint[] }) {
   return (
     <Card className="xl:col-span-2">
       <CardHeader>
@@ -39,7 +44,7 @@ export function OverviewChart() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[280px] w-full">
-          <AreaChart data={prescriptionTrend} margin={{ left: 4, right: 4 }}>
+          <AreaChart data={data} margin={{ left: 4, right: 4 }}>
             <defs>
               <linearGradient id="fillPrescriptions" x1="0" y1="0" x2="0" y2="1">
                 <stop

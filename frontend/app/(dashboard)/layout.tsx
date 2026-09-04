@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { PortalGate } from "@/components/portal-gate"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export default function DashboardLayout({
@@ -9,9 +10,11 @@ export default function DashboardLayout({
   children: ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
-    </SidebarProvider>
+    <PortalGate>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </PortalGate>
   )
 }

@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Table,
   TableBody,
@@ -19,8 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { StatusBadge } from "@/components/status-badge"
-import { prescriptions } from "@/lib/data"
 
 export function RecentPrescriptions() {
   return (
@@ -31,7 +28,12 @@ export function RecentPrescriptions() {
           Latest prescriptions processed by the assistant
         </CardDescription>
         <CardAction>
-          <Button variant="ghost" size="sm" render={<Link href="/medicines" />}>
+          <Button
+            nativeButton={false}
+            variant="ghost"
+            size="sm"
+            render={<Link href="/medicines" />}
+          >
             View all
             <ArrowUpRight data-icon="inline-end" />
           </Button>
@@ -48,36 +50,11 @@ export function RecentPrescriptions() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {prescriptions.map((rx) => (
-              <TableRow key={rx.id}>
-                <TableCell className="pl-6">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-9">
-                      <AvatarFallback className="bg-accent text-xs text-accent-foreground">
-                        {rx.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-foreground">
-                        {rx.patient}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {rx.id} &middot; {rx.date}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden text-muted-foreground md:table-cell">
-                  {rx.doctor}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {rx.medicines}
-                </TableCell>
-                <TableCell className="pr-6 text-right">
-                  <StatusBadge status={rx.status} />
-                </TableCell>
-              </TableRow>
-            ))}
+            <TableRow>
+              <TableCell colSpan={4} className="p-6 text-center text-sm text-muted-foreground">
+                Upload a prescription to see analyzed records here.
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </CardContent>

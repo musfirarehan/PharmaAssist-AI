@@ -15,7 +15,11 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { adherenceData } from "@/lib/data"
+
+type AdherencePoint = {
+  day: string
+  adherence: number
+}
 
 const chartConfig = {
   adherence: {
@@ -24,7 +28,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function AdherenceChart() {
+export function AdherenceChart({ data = [] }: { data?: AdherencePoint[] }) {
   return (
     <Card>
       <CardHeader>
@@ -35,7 +39,7 @@ export function AdherenceChart() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[280px] w-full">
-          <BarChart data={adherenceData} margin={{ left: -12, right: 4 }}>
+          <BarChart data={data} margin={{ left: -12, right: 4 }}>
             <CartesianGrid vertical={false} strokeDasharray="4 4" />
             <XAxis
               dataKey="day"

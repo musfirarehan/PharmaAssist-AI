@@ -1,8 +1,10 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Download, FileBarChart2, ShieldCheck, Activity } from "lucide-react"
 
 import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -22,60 +24,62 @@ import { OverviewChart } from "@/components/dashboard/overview-chart"
 import { CategoryChart } from "@/components/reports/category-chart"
 import { AdherenceChart } from "@/components/reports/adherence-chart"
 
-const kpis = [
-  {
-    label: "Avg. analysis accuracy",
-    value: "98.6%",
-    icon: ShieldCheck,
-  },
-  {
-    label: "Interactions prevented",
-    value: "312",
-    icon: Activity,
-  },
-  {
-    label: "Reports generated",
-    value: "1,047",
-    icon: FileBarChart2,
-  },
-]
-
-const reports = [
-  {
-    id: "RPT-4821",
-    title: "Amelia Hughes — Full analysis",
-    date: "Aug 2, 2026",
-    meds: 4,
-    risk: "Low",
-    tone: "bg-accent text-accent-foreground",
-  },
-  {
-    id: "RPT-4820",
-    title: "Sofia Alvarez — Interaction review",
-    date: "Aug 1, 2026",
-    meds: 5,
-    risk: "High",
-    tone: "bg-destructive/10 text-destructive",
-  },
-  {
-    id: "RPT-4818",
-    title: "David Chen — Full analysis",
-    date: "Aug 1, 2026",
-    meds: 3,
-    risk: "Moderate",
-    tone: "bg-chart-4/15 text-chart-4",
-  },
-  {
-    id: "RPT-4815",
-    title: "Grace Miller — Refill assessment",
-    date: "Jul 31, 2026",
-    meds: 1,
-    risk: "Low",
-    tone: "bg-accent text-accent-foreground",
-  },
-]
+type AnalysisResult = {
+  data?: {
+    ocr_result?: {
+      medicines?: Array<{ name?: string }>
+    }
+    counseling?: {
+      medicines?: Array<{
+        name?: string
+        category?: string
+        serious_warnings?: string[]
+      }>
+    }
+  }
+}
 
 export default function ReportsPage() {
+  const [result, setResult] = useState<AnalysisResult | null>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem("prescriptionResult")
+    if (!saved) return
+
+    try {
+      setResult(JSON.parse(saved))
+    } catch {
+      setResult(null)
+    }
+  }, [])
+
+  const ocrMedicines = result?.data?.ocr_result?.medicines || []
+  const counselingMedicines = result?.data?.counseling?.medicines || []
+  const medicines = counselingMedicines.length ? counselingMedicines : ocrMedicines
+  const interactions = counselingMedicines.filter(
+    (medicine) => (medicine.serious_warnings || []).length > 0,
+  ).length
+  const categories = medicines.reduce<Record<string, number>>((counts, medicine) => {
+    const category = "category" in medicine && medicine.category
+      ? medicine.category
+      : "Uncategorized"
+    counts[category] = (counts[category] || 0) + 1
+    return counts
+  }, {})
+  const categoryData = Object.entries(categories).map(([category, value], index) => ({
+    category,
+    value,
+    fill: `var(--chart-${(index % 5) + 1})`,
+  }))
+  const activityData = result
+    ? [{ month: "Current", prescriptions: 1, medicines: medicines.length }]
+    : []
+  const kpis = [
+    { label: "Medicines analyzed", value: String(medicines.length), icon: FileBarChart2 },
+    { label: "Warnings identified", value: String(interactions), icon: ShieldCheck },
+    { label: "Reports generated", value: result ? "1" : "0", icon: Activity },
+  ]
+
   return (
     <>
       <PageHeader
@@ -97,23 +101,19 @@ export default function ReportsPage() {
                   <kpi.icon className="size-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xl font-semibold text-foreground">
-                    {kpi.value}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {kpi.label}
-                  </span>
+                  <span className="text-xl font-semibold text-foreground">{kpi.value}</span>
+                  <span className="text-sm text-muted-foreground">{kpi.label}</span>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <OverviewChart />
+        <OverviewChart data={activityData} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <CategoryChart />
-          <AdherenceChart />
+          <CategoryChart data={categoryData} />
+          <AdherenceChart data={[]} />
         </div>
 
         <Card>
@@ -137,40 +137,31 @@ export default function ReportsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reports.map((report) => (
-                  <TableRow key={report.id}>
+                {result ? (
+                  <TableRow>
                     <TableCell className="pl-6">
                       <div className="flex flex-col">
-                        <span className="font-medium text-foreground">
-                          {report.title}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {report.id}
-                        </span>
+                        <span className="font-medium text-foreground">Current prescription analysis</span>
+                        <span className="text-xs text-muted-foreground">Generated from the latest upload</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">
-                      {report.date}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {report.meds}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`border-transparent font-medium ${report.tone}`}
-                      >
-                        {report.risk}
-                      </Badge>
-                    </TableCell>
+                    <TableCell className="hidden text-muted-foreground md:table-cell">Latest upload</TableCell>
+                    <TableCell className="hidden sm:table-cell">{medicines.length}</TableCell>
+                    <TableCell>{interactions ? "Review" : "No warnings"}</TableCell>
                     <TableCell className="pr-6 text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => window.print()}>
                         <Download data-icon="inline-start" />
-                        PDF
+                        Print
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="p-6 text-center text-sm text-muted-foreground">
+                      Upload a prescription to generate an analysis report.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>

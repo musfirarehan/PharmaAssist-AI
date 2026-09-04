@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import { Upload, Sparkles } from "lucide-react"
 
 import { PageHeader } from "@/components/page-header"
@@ -9,18 +12,38 @@ import { RecentPrescriptions } from "@/components/dashboard/recent-prescriptions
 import { UpcomingReminders } from "@/components/dashboard/upcoming-reminders"
 
 export default function DashboardPage() {
+  const [greeting, setGreeting] = useState("Hello")
+
+  useEffect(() => {
+    const savedProfile = localStorage.getItem("profile")
+    if (!savedProfile) return
+
+    try {
+      const profile = JSON.parse(savedProfile)
+      const name = profile.name?.trim()
+      if (!name) return
+      setGreeting(profile.role === "pharmacist" ? `Hello, Dr. ${name}` : `Hello, Mr./Ms. ${name}`)
+    } catch {
+      setGreeting("Hello")
+    }
+  }, [])
+
   return (
     <>
       <PageHeader
-        title="Good morning, Dr. Rossi"
+        title={greeting}
         description="Here is what is happening across your pharmacy today."
         actions={
           <>
-            <Button render={<Link href="/upload" />}>
+            <Button nativeButton={false} render={<Link href="/upload" />}>
               <Upload data-icon="inline-start" />
               Upload Prescription
             </Button>
-            <Button variant="outline" render={<Link href="/chat" />}>
+            <Button
+              nativeButton={false}
+              variant="outline"
+              render={<Link href="/chat" />}
+            >
               <Sparkles data-icon="inline-start" />
               Ask AI Pharmacist
             </Button>

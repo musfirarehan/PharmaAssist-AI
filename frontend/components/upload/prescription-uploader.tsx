@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   UploadCloud,
   FileImage,
@@ -18,6 +18,7 @@ import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { buildApiUrl } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
 
@@ -30,6 +31,8 @@ type Stage =
 
 
 export function PrescriptionUploader() {
+
+  const router = useRouter()
 
   const [stage,setStage] =
     useState<Stage>("idle")
@@ -81,52 +84,46 @@ export function PrescriptionUploader() {
       setStage("processing")
 
 
-      const response =
-        await fetch(
-          "http://127.0.0.1:8000/api/v1/upload-prescription",
-          {
-            method:"POST",
-            body:formData
-          }
-        )
+      const response = await fetch(buildApiUrl("/v1/upload-prescription"), {
+        method: "POST",
+        body: formData,
+      })
 
+      const data = await response.json().catch(() => null)
 
-      if(!response.ok){
-        throw new Error(
-          "Failed to process prescription"
-        )
+      if (!response.ok || !data || data.success === false) {
+        const message =
+          data?.message || data?.error || "Failed to process prescription"
+        throw new Error(message)
       }
 
+      localStorage.setItem("prescriptionResult", JSON.stringify(data))
 
-      const data =
-        await response.json()
-
-
-
-      console.log(
-        "Backend response:",
-        data
-      )
-
-
-      localStorage.setItem(
-        "prescriptionResult",
-        JSON.stringify(data)
-      )
-
+      const ocrMedicines = data?.data?.ocr_result?.medicines || []
+      const profile = JSON.parse(localStorage.getItem("profile") || "null")
+      const reminderKey = `reminders:${profile?.id || "current"}:${JSON.stringify(ocrMedicines)}`
+      if (ocrMedicines.length && !localStorage.getItem(reminderKey)) {
+        const reminderResponse = await fetch(buildApiUrl("/v1/reminders/schedules"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(localStorage.getItem("authToken")
+              ? { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+              : {}),
+          },
+          body: JSON.stringify({ medicines: ocrMedicines }),
+        })
+        if (reminderResponse.ok) localStorage.setItem(reminderKey, "created")
+      }
 
       setResult(data)
-
       setStage("done")
 
+      const medicineCount = data?.data?.ocr_result?.medicines?.length ?? 0
 
-      toast.success(
-        "Prescription analyzed",
-        {
-          description:
-          `${data.data.ocr_result.medicines.length} medicines detected`
-        }
-      )
+      toast.success("Prescription analyzed", {
+        description: `${medicineCount} medicines detected`,
+      })
 
 
     }
@@ -137,13 +134,11 @@ export function PrescriptionUploader() {
       setStage("error")
 
 
-      toast.error(
-        "Processing failed",
-        {
-          description:
-          "Unable to analyze prescription"
-        }
-      )
+      const message = error instanceof Error ? error.message : "Unable to analyze prescription"
+
+      toast.error("Processing failed", {
+        description: message,
+      })
 
     }
 
@@ -387,17 +382,16 @@ AI counseling generated successfully
 
 
 
-<Link href="/medicines">
-
-<Button className="mt-4">
+<Button
+  className="mt-4"
+  onClick={() => router.push(localStorage.getItem("portal") === "patient" ? "/patient" : "/medicines")}
+>
 
 <Sparkles/>
 
 View Results
 
 </Button>
-
-</Link>
 
 
 </div>

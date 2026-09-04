@@ -17,7 +17,12 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { categoryBreakdown } from "@/lib/data"
+
+type CategoryPoint = {
+  category: string
+  value: number
+  fill?: string
+}
 
 const chartConfig = {
   value: { label: "Share" },
@@ -28,7 +33,7 @@ const chartConfig = {
   other: { label: "Other", color: "var(--chart-5)" },
 } satisfies ChartConfig
 
-export function CategoryChart() {
+export function CategoryChart({ data = [] }: { data?: CategoryPoint[] }) {
   return (
     <Card>
       <CardHeader>
@@ -45,13 +50,7 @@ export function CategoryChart() {
               cursor={false}
               content={<ChartTooltipContent nameKey="category" hideLabel />}
             />
-            <Pie
-              data={categoryBreakdown}
-              dataKey="value"
-              nameKey="category"
-              innerRadius={60}
-              strokeWidth={4}
-            />
+            <Pie data={data} dataKey="value" nameKey="category" innerRadius={60} strokeWidth={4} />
             <ChartLegend
               content={<ChartLegendContent nameKey="category" />}
               className="flex-wrap gap-2"
