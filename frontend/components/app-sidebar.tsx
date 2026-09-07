@@ -45,7 +45,7 @@ const mainNav = [
   { title: "AI-Assisted Counseling", href: "/counseling", icon: ClipboardList },
   { title: "Medication Knowledge Search", href: "/knowledge", icon: Search },
   { title: "Interaction & Safety", href: "/safety", icon: ShieldCheck },
-  { title: "Patient Communication", href: "/chat", icon: MessageSquareText },
+  { title: "Patient Communication", href: "/chat?mode=human", icon: MessageSquareText },
   { title: "Reminders", href: "/reminders", icon: BellRing },
   { title: "Reports", href: "/reports", icon: FileBarChart2 },
 ]
@@ -59,7 +59,8 @@ const patientNav = [
   { title: "Prescription Upload", href: "/upload", icon: Upload },
   { title: "My Medicines", href: "/patient", icon: Pill },
   { title: "AI Medication Counseling", href: "/patient/counseling", icon: ClipboardList },
-  { title: "AI Pharmacist Chat", href: "/chat", icon: MessageSquareText },
+  { title: "AI Pharmacist Chat", href: "/chat?mode=ai", icon: MessageSquareText },
+  { title: "Contact a Pharmacist", href: "/chat?mode=human", icon: MessageSquareText },
   { title: "Reminders", href: "/reminders", icon: BellRing },
   { title: "Medication Safety", href: "/patient/safety", icon: ShieldCheck },
   { title: "Prescription History", href: "/patient/history", icon: History },

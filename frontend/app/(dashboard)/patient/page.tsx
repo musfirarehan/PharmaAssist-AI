@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { MessageSquareText, Pill, Upload } from "lucide-react"
+import { BellRing, MessageSquareText, Pill, Upload } from "lucide-react"
 
 import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
@@ -19,8 +19,17 @@ type Medicine = {
 
 export default function PatientPortalPage() {
   const [medicines, setMedicines] = useState<Medicine[]>([])
+  const [greeting, setGreeting] = useState("Hello, Mr./Ms. Patient")
 
   useEffect(() => {
+    try {
+      const profile = JSON.parse(localStorage.getItem("profile") || "null")
+      const displayName = profile?.name?.trim() || profile?.username?.trim()
+      if (displayName) setGreeting(`Hello, Mr./Ms. ${displayName}`)
+    } catch {
+      setGreeting("Hello, Mr./Ms. Patient")
+    }
+
     const saved = localStorage.getItem("prescriptionResult")
     if (!saved) return
 
@@ -35,16 +44,45 @@ export default function PatientPortalPage() {
   return (
     <>
       <PageHeader
-        title="My Medicines"
-        description="Your patient-friendly prescription summary."
+        title={greeting}
+        description="Your medication dashboard and care tools."
         actions={
-          <Button nativeButton={false} render={<Link href="/chat" />}>
+          <>
+            <Button nativeButton={false} render={<Link href="/chat?mode=ai" />}>
             <MessageSquareText data-icon="inline-start" />
-            Ask a pharmacist
-          </Button>
+              Ask AI pharmacist
+            </Button>
+            <Button nativeButton={false} variant="outline" render={<Link href="/chat?mode=human" />}>
+              <MessageSquareText data-icon="inline-start" />
+              Contact pharmacist
+            </Button>
+          </>
         }
       />
       <main className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <CardContent className="flex items-center gap-3 p-5">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-accent text-accent-foreground"><Pill className="size-5" /></div>
+              <div><p className="text-2xl font-semibold">{medicines.length}</p><p className="text-sm text-muted-foreground">Medicines explained</p></div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-5">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-accent text-accent-foreground"><BellRing className="size-5" /></div>
+              <div><p className="text-2xl font-semibold">{medicines.length ? medicines.length : 0}</p><p className="text-sm text-muted-foreground">Medication reminders</p></div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex items-center gap-3 p-5">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-accent text-accent-foreground"><MessageSquareText className="size-5" /></div>
+              <div><p className="text-2xl font-semibold">24/7</p><p className="text-sm text-muted-foreground">Pharmacist support</p></div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div>
+          <h2 className="mb-3 text-base font-semibold">My medicines</h2>
         {medicines.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
@@ -82,6 +120,7 @@ export default function PatientPortalPage() {
             ))}
           </div>
         )}
+        </div>
       </main>
     </>
   )

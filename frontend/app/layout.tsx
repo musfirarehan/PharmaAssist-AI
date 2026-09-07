@@ -16,29 +16,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'PharmaAssist AI — Intelligent Pharmacist Assistant',
-  description:
-    'AI-powered pharmacist assistant to analyze prescriptions, explain medicines, generate reminders, and answer patient questions.',
-  generator: 'v0.app',
+  title: "PharmaAssist AI",
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 }
-
 export const viewport: Viewport = {
   colorScheme: 'light',
   themeColor: '#ffffff',

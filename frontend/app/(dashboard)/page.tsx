@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Upload, Sparkles } from "lucide-react"
+import { MessageSquareText, Upload } from "lucide-react"
 
 import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import { RecentPrescriptions } from "@/components/dashboard/recent-prescriptions
 import { UpcomingReminders } from "@/components/dashboard/upcoming-reminders"
 
 export default function DashboardPage() {
-  const [greeting, setGreeting] = useState("Hello")
+  const [greeting, setGreeting] = useState("Hello, Dr. Pharmacist")
 
   useEffect(() => {
     const savedProfile = localStorage.getItem("profile")
@@ -20,11 +20,11 @@ export default function DashboardPage() {
 
     try {
       const profile = JSON.parse(savedProfile)
-      const name = profile.name?.trim()
+      const name = profile.name?.trim() || profile.username?.trim()
       if (!name) return
       setGreeting(profile.role === "pharmacist" ? `Hello, Dr. ${name}` : `Hello, Mr./Ms. ${name}`)
     } catch {
-      setGreeting("Hello")
+      setGreeting("Hello, Dr. Pharmacist")
     }
   }, [])
 
@@ -44,8 +44,8 @@ export default function DashboardPage() {
               variant="outline"
               render={<Link href="/chat" />}
             >
-              <Sparkles data-icon="inline-start" />
-              Ask AI Pharmacist
+              <MessageSquareText data-icon="inline-start" />
+              Patient Communication
             </Button>
           </>
         }
